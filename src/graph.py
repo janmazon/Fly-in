@@ -34,3 +34,4 @@ class Graph:
         self.connections: list[Connection] = []
         self.start_hub: Zone | None = None
         self.end_hub: Zone | None = None
+        self.num_drones: int = 0
