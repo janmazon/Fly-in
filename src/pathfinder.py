@@ -26,7 +26,7 @@ class Pathfinder:
                 while current in came_from:
                     current = came_from[current]
                     final_path.append(current)
-                return final_path[::-1]
+                return final_path[::-1][1:]
 
             open_list.remove(current)
 

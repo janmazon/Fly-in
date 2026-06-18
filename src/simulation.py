@@ -43,6 +43,10 @@ class Simulation:
                 print(" ".join(moves))
 
             for d in drones_to_remove:
+                if d.current_zone is not None:
+                    d.current_zone.current_drones -= 1
+                if d.current_connection is not None:
+                    d.current_connection.current_traffic -= 1
                 self.drones.remove(d)
 
         return self.turn

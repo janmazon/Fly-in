@@ -16,12 +16,19 @@ class Drone:
             self.path = path
 
     def move(self, graph: Graph) -> bool:
+        if (self.transit_timer == 0 and self.current_connection is not None and
+                self.target_zone is None):
+            self.current_connection.current_traffic -= 1
+            self.current_connection = None
+
         if self.transit_timer > 0:
             self.transit_timer -= 1
             if self.transit_timer == 0:
                 self.current_zone = self.target_zone
                 self.target_zone = None
-                self.current_connection = None
+                if self.current_connection is not None:
+                    self.current_connection.current_traffic -= 1
+                    self.current_connection = None
             return True
 
         if not self.path:
@@ -61,5 +68,6 @@ class Drone:
             self.current_zone = None
         else:
             self.current_zone = next_zone
+            self.current_connection = target_connection
 
         return True
