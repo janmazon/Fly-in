@@ -19,8 +19,30 @@ class Simulation:
     def run(self) -> int:
         while self.drones:
             self.turn += 1
+            moves: list[str] = []
+            drones_to_remove: list[Drone] = []
+
             for drone in self.drones:
                 if not drone.path:
                     drone.path = self.pathfinder.get_path(drone.current_zone)
+
+                if drone.move(self.graph):
+                    if (drone.target_zone is not None and
+                            drone.current_connection is not None):
+                        moves.append(f"D{drone.drone_id}-"
+                                     f"{drone.current_connection.zone_a.name}-"
+                                     f"{drone.current_connection.zone_b.name}")
+                    elif drone.current_zone is not None:
+                        moves.append(f"D{drone.drone_id}-"
+                                     f"{drone.current_zone.name}")
+
+                if drone.current_zone is self.graph.end_hub:
+                    drones_to_remove.append(drone)
+
+            if moves:
+                print(" ".join(moves))
+
+            for d in drones_to_remove:
+                self.drones.remove(d)
 
         return self.turn
