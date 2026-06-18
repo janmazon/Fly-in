@@ -1,4 +1,4 @@
-from src.graph import Graph, Zone
+from src.graph import Graph, Zone, ZoneType
 
 
 class Pathfinder:
@@ -38,10 +38,10 @@ class Pathfinder:
                 else:
                     continue
 
-                if neighbor.zone_type == "blocked":
+                if neighbor.zone_type is ZoneType.BLOCKED:
                     continue
 
-                if neighbor.zone_type == "restricted":
+                if neighbor.zone_type is ZoneType.RESTRICTED:
                     base_cost = 2.0
                 else:
                     base_cost = 1.0
