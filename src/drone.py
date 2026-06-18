@@ -1,4 +1,4 @@
-from src.graph import Zone, Connection
+from src.graph import Zone, Connection, Graph, ZoneType
 
 
 class Drone:
@@ -14,3 +14,52 @@ class Drone:
             self.path: list[Zone] = []
         else:
             self.path = path
+
+    def move(self, graph: Graph) -> bool:
+        if self.transit_timer > 0:
+            self.transit_timer -= 1
+            if self.transit_timer == 0:
+                self.current_zone = self.target_zone
+                self.target_zone = None
+                self.current_connection = None
+            return True
+
+        if not self.path:
+            return False
+
+        if self.current_zone is None:
+            return False
+
+        next_zone = self.path[0]
+        target_connection = None
+
+        for connection in graph.connections:
+            if (self.current_zone is connection.zone_a and
+                    next_zone is connection.zone_b):
+                target_connection = connection
+            elif (self.current_zone is connection.zone_b and
+                    next_zone is connection.zone_a):
+                target_connection = connection
+
+        if not target_connection:
+            return False
+
+        if ((target_connection.current_traffic >=
+                target_connection.max_link_capacity) or
+                (next_zone.current_drones >= next_zone.max_drones)):
+            return False
+
+        self.path.pop(0)
+        self.current_zone.current_drones -= 1
+        target_connection.current_traffic += 1
+        next_zone.current_drones += 1
+
+        if next_zone.zone_type is ZoneType.RESTRICTED:
+            self.target_zone = next_zone
+            self.current_connection = target_connection
+            self.transit_timer = 1
+            self.current_zone = None
+        else:
+            self.current_zone = next_zone
+
+        return True

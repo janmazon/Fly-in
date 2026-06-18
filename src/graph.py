@@ -18,6 +18,7 @@ class Zone:
         self.color = color
         self.zone_type = zone_type
         self.max_drones = max_drones
+        self.current_drones: int = 0
 
 
 class Connection:

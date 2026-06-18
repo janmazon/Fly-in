@@ -18,6 +18,9 @@ class Simulation:
 
     def run(self) -> int:
         while self.drones:
-            pass
+            self.turn += 1
+            for drone in self.drones:
+                if not drone.path:
+                    drone.path = self.pathfinder.get_path(drone.current_zone)
 
         return self.turn
