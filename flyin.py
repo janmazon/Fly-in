@@ -2,6 +2,7 @@ import sys
 from src.graph import Graph
 from src.parser import ParseError, MapParser
 from src.simulation import Simulation
+from src.visualizer import Visualizer
 
 
 def main() -> None:
@@ -14,6 +15,10 @@ def main() -> None:
 
     try:
         parser.parse_file(sys.argv[1], graph)
+
+        visualizer = Visualizer(graph)
+        visualizer.show()
+
         simulation = Simulation(graph)
         turns = simulation.run()
         print(turns)
