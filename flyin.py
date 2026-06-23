@@ -15,16 +15,18 @@ def main() -> None:
 
     try:
         parser.parse_file(sys.argv[1], graph)
-
         visualizer = Visualizer(graph)
-        visualizer.show()
-
-        simulation = Simulation(graph)
+        simulation = Simulation(graph, visualizer)
         turns = simulation.run()
         print(turns)
+        visualizer.show()
 
-    except ParseError as e:
-        print(f"Error: {e}")
+    except ParseError:
+        print("Error: Map file argument is required.")
+        sys.exit(1)
+
+    except KeyboardInterrupt:
+        print("\nError: Simulation aborted by user.")
         sys.exit(1)
 
 

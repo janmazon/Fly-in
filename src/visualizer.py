@@ -1,5 +1,6 @@
 import tkinter as tk
 from src.graph import Graph
+from src.drone import Drone
 
 
 class Visualizer:
@@ -13,26 +14,27 @@ class Visualizer:
 
         width: int = self.window.winfo_width()
         height: int = self.window.winfo_height()
-        max_x: int = 0
-        max_y: int = 0
-        for zone in self.graph.zones.values():
-            if zone.x > max_x:
-                max_x = zone.x
-            if zone.y > max_y:
-                max_y = zone.y
-        if max_x == 0:
-            max_x = 1
-        if max_y == 0:
-            max_y = 1
+
+        self.min_x = min([zone.x for zone in self.graph.zones.values()])
+        self.min_y = min([zone.y for zone in self.graph.zones.values()])
+        max_x = max([zone.x for zone in self.graph.zones.values()])
+        max_y = max([zone.y for zone in self.graph.zones.values()])
+        diff_x = max_x - self.min_x
+        diff_y = max_y - self.min_y
+
+        if diff_x == 0:
+            diff_x = 1
+        if diff_y == 0:
+            diff_y = 1
 
         offset: int = 100
 
-        scale_x = (width - (offset * 2)) / max_x
-        scale_y = (height - (offset * 2)) / max_y
+        scale_x = (width - (offset * 2)) / diff_x
+        scale_y = (height - (offset * 2)) / diff_y
         self.scale = min(scale_x, scale_y)
 
-        drawing_width = max_x * self.scale
-        drawing_height = max_y * self.scale
+        drawing_width = diff_x * self.scale
+        drawing_height = diff_y * self.scale
 
         self.offset_x = (width - drawing_width) / 2
         self.offset_y = (height - drawing_height) / 2
@@ -40,8 +42,8 @@ class Visualizer:
         self.draw_graph()
 
     def get_coordinates(self, x: int, y: int) -> tuple[int, int]:
-        return (int(x * self.scale + self.offset_x),
-                int(y * self.scale + self.offset_y))
+        return (int((x - self.min_x) * self.scale + self.offset_x),
+                int((y - self.min_y) * self.scale + self.offset_y))
 
     def draw_graph(self) -> None:
         self.canvas.delete("all")
@@ -78,6 +80,25 @@ class Visualizer:
 
             if len(self.graph.zones) < 45:
                 self.canvas.create_text(x, y + radio + 15, text=zone.name)
+
+    def draw_drones(self, drones: list[Drone]) -> None:
+        self.canvas.delete("drone")
+        drones_in_zone: dict[str, int] = {}
+
+        for drone in drones:
+            if drone.current_zone is not None:
+                x, y = self.get_coordinates(drone.current_zone.x,
+                                            drone.current_zone.y)
+                if drone.current_zone.name not in drones_in_zone:
+                    drones_in_zone[drone.current_zone.name] = 0
+                pos_in_line = drones_in_zone[drone.current_zone.name]
+                new_x = (x - 10) + (pos_in_line * 18)
+                self.canvas.create_oval(new_x - 8, y - 8, new_x + 8, y + 8,
+                                        fill="black", tags="drone")
+                self.canvas.create_text(new_x, y, text=str(drone.drone_id),
+                                        fill="white", font=("Arial", 8),
+                                        tags="drone")
+                drones_in_zone[drone.current_zone.name] += 1
 
     def show(self) -> None:
         self.window.mainloop()

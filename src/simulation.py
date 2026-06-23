@@ -1,11 +1,14 @@
 from src.graph import Graph
 from src.drone import Drone
 from src.pathfinder import Pathfinder
+from src.visualizer import Visualizer
+import time
 
 
 class Simulation:
-    def __init__(self, graph: Graph) -> None:
+    def __init__(self, graph: Graph, visualizer: Visualizer) -> None:
         self.graph = graph
+        self.visualizer = visualizer
         self.turn: int = 0
         self.drones: list[Drone] = []
         self.pathfinder: Pathfinder = Pathfinder(self.graph)
@@ -41,6 +44,13 @@ class Simulation:
 
             if moves:
                 print(" ".join(moves))
+
+            try:
+                self.visualizer.draw_drones(self.drones)
+                self.visualizer.window.update()
+                time.sleep(1.0)
+            except Exception:
+                pass
 
             for d in drones_to_remove:
                 if d.current_zone is not None:

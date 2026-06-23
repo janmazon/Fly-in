@@ -51,9 +51,11 @@ class Drone:
         if not target_connection:
             return False
 
-        if ((target_connection.current_traffic >=
-                target_connection.max_link_capacity) or
-                (next_zone.current_drones >= next_zone.max_drones)):
+        if (target_connection.current_traffic >=
+                target_connection.max_link_capacity):
+            return False
+        if (next_zone.current_drones >= next_zone.max_drones and
+                next_zone is not graph.end_hub):
             return False
 
         self.path.pop(0)
