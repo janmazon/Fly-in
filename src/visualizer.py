@@ -4,7 +4,18 @@ from src.drone import Drone
 
 
 class Visualizer:
+    """Draws the map and the drones on a window, using Tkinter, so a
+    person can watch the simulation happen.
+    """
+
     def __init__(self, graph: Graph) -> None:
+        """Builds the window, works out how to scale the map so it fits
+        the screen, and draws the map for the first time.
+
+        Args:
+            graph: The graph (map) that will be drawn.
+        """
+
         self.graph = graph
         self.window = tk.Tk()
         self.window.attributes("-zoomed", True)
@@ -42,10 +53,25 @@ class Visualizer:
         self.draw_graph()
 
     def get_coordinates(self, x: int, y: int) -> tuple[int, int]:
+        """Converts a zone's (x, y) position from the map file into the
+        actual pixel position on the screen.
+
+        Args:
+            x: The X position of the zone, as written in the map file.
+            y: The Y position of the zone, as written in the map file.
+
+        Returns:
+            The pixel position on screen where this point should be drawn.
+        """
+
         return (int((x - self.min_x) * self.scale + self.offset_x),
                 int((y - self.min_y) * self.scale + self.offset_y))
 
     def draw_graph(self) -> None:
+        """Clears the screen and draws every connection (as lines) and
+        every zone (as colored circles with their name) on the canvas.
+        """
+
         self.canvas.delete("all")
 
         for connection in self.graph.connections:
@@ -82,6 +108,16 @@ class Visualizer:
                 self.canvas.create_text(x, y + radio + 15, text=zone.name)
 
     def draw_drones(self, drones: list[Drone]) -> None:
+        """Removes the drones drawn in the previous turn and draws all the
+        drones again at their new positions.
+
+        If more than one drone is in the same zone, they are placed next to
+        each other in a small row so they don't overlap.
+
+        Args:
+            drones: The list of drones to draw on the map.
+        """
+
         self.canvas.delete("drone")
         drones_in_zone: dict[str, int] = {}
 
@@ -101,4 +137,8 @@ class Visualizer:
                 drones_in_zone[drone.current_zone.name] += 1
 
     def show(self) -> None:
+        """Starts the Tkinter event loop so the window stays open and
+        responds to events (like closing it).
+        """
+
         self.window.mainloop()

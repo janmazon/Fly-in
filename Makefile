@@ -1,6 +1,6 @@
 PYTHON = python3
 MAIN = flyin.py
-MAP ?= maps/easy.txt
+MAP = simple_map.txt
 
 install:
 	pip install -r requirements.txt

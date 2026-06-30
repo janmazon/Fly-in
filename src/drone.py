@@ -2,8 +2,20 @@ from src.graph import Zone, Connection, Graph, ZoneType
 
 
 class Drone:
+    """Represents one drone moving through the network of zones.
+    """
+
     def __init__(self, drone_id: int, current_zone: Zone | None,
                  path: list[Zone] | None = None) -> None:
+        """Builds a new Drone.
+
+        Args:
+            drone_id: The unique number that identifies this drone.
+            current_zone: The zone where the drone starts.
+            path: The list of zones the drone plans to visit, in order.
+                Defaults to None, which becomes an empty list.
+        """
+
         self.drone_id = drone_id
         self.current_zone = current_zone
         self.current_connection: Connection | None = None
@@ -17,6 +29,23 @@ class Drone:
             self.path = path
 
     def move(self, graph: Graph) -> bool:
+        """Tries to move the drone one step forward on its path.
+
+        This handles three situations: the drone is currently flying through a
+        restricted zone (it must wait), the drone has just finished crossing a
+        restricted zone, or the drone is free to try to move to the next zone
+        on its path.
+
+        Args:
+            graph: The graph the drone is moving inside of, needed to find
+                the connection between the current zone and the next one.
+
+        Returns:
+            bool: True if the drone moved (or is still moving) this turn,
+            False if the drone could not move (for example because the
+            next zone or connection is full, or because it has no path).
+        """
+
         if (self.transit_timer == 0 and self.current_connection is not None and
                 self.target_zone is None):
             self.current_connection.current_traffic -= 1

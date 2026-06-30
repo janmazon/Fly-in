@@ -6,6 +6,14 @@ from src.visualizer import Visualizer
 
 
 def main() -> None:
+    """The entry point of the program.
+
+    Checks that a map file was given as an argument, parses it into a graph,
+    then creates the visualizer and the simulation and runs it. If anything
+    goes wrong (bad map, or the user stops the program), it prints an error
+    message and exits.
+    """
+
     if len(sys.argv) != 2:
         print("Error: you must include 'flyin.py' <map.txt>")
         sys.exit(1)
@@ -21,8 +29,8 @@ def main() -> None:
         print(turns)
         visualizer.show()
 
-    except ParseError:
-        print("Error: Map file argument is required.")
+    except ParseError as e:
+        print(f"Error: {e}")
         sys.exit(1)
 
     except KeyboardInterrupt:

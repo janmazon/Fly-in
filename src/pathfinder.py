@@ -2,10 +2,34 @@ from src.graph import Graph, Zone, ZoneType
 
 
 class Pathfinder:
+    """Finds the best path between two zones in the graph, using the A* (Astar)
+    algorithm.
+    """
+
     def __init__(self, graph: Graph) -> None:
+        """Builds a new Pathfinder.
+
+        Args:
+            graph: The graph that the pathfinder will search through.
+        """
+
         self.graph = graph
 
     def get_path(self, current_zone: Zone | None) -> list[Zone]:
+        """Calculates the best path from the given zone to the end hub.
+
+        Uses the A* algorithm: it always explores the zone that looks most
+        promising first and avoids blocked zones completely.
+
+        Args:
+            current_zone: The zone where the path should start. If this is
+                None, no path can be found.
+
+        Returns:
+            The list of zones to visit, in order, not including the starting
+            zone. Returns an empty list if no path could be found.
+        """
+
         if current_zone is None:
             return []
 

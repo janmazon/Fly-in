@@ -7,7 +7,18 @@ import sys
 
 
 class Simulation:
+    """Runs the drone simulation, turn by turn, until every drone has arrived
+    at the end hub.
+    """
+
     def __init__(self, graph: Graph, visualizer: Visualizer) -> None:
+        """Builds a new Simulation and creates all the drones at the start hub.
+
+        Args:
+            graph: The graph (map) the simulation will run on.
+            visualizer: The window used to draw the simulation on screen.
+        """
+
         self.graph = graph
         self.visualizer = visualizer
         self.turn: int = 0
@@ -21,6 +32,19 @@ class Simulation:
                 self.drones.append(new_drone)
 
     def run(self) -> int:
+        """Runs the simulation turn by turn until every drone has arrived at
+        the end hub.
+
+        On each turn, every drone that has no path tries to find one, then
+        tries to move. If a drone cannot move for too long, its path is thrown
+        away and it can try to find a new one. All the moves made on a turn are
+        printed, and the screen is redrawn and paused for a second so a person
+        can watch it happen.
+
+        Returns:
+            int: The total number of turns the simulation took to finish.
+        """
+
         while self.drones:
             self.turn += 1
             moves: list[str] = []

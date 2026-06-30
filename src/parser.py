@@ -2,11 +2,35 @@ from src.graph import Graph, Zone, ZoneType, Connection
 
 
 class ParseError(Exception):
+    """An error raised when the map file has a mistake in it
+    (bad format, missing data, duplicated names, etc).
+    """
+
     pass
 
 
 class MapParser:
+    """Reads a map file and fills a Graph with the zones and connections
+    described inside it.
+    """
+
     def parse_file(self, file: str, graph: Graph) -> None:
+        """Reads the given map file line by line and builds the graph.
+
+        It checks that the file starts with the number of drones, then reads
+        zone lines (hub, start_hub, end_hub) and connection lines, and raises
+        a ParseError if anything is written in the wrong format.
+
+        Args:
+            file: The path to the map file to read.
+            graph: The Graph object that will be filled with the zones and
+                connections found in the file.
+
+        Raises:
+            ParseError: If the file cannot be opened, or if any line in the
+                file does not follow the expected format.
+        """
+
         try:
             with open(file, "r") as f:
                 counter_line: int = 0
