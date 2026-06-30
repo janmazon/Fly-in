@@ -43,6 +43,8 @@ class Pathfinder:
 
                 if neighbor.zone_type is ZoneType.RESTRICTED:
                     base_cost = 2.0
+                elif neighbor.zone_type is ZoneType.PRIORITY:
+                    base_cost = 0.5
                 else:
                     base_cost = 1.0
 

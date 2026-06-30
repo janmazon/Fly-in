@@ -3,6 +3,7 @@ from src.drone import Drone
 from src.pathfinder import Pathfinder
 from src.visualizer import Visualizer
 import time
+import sys
 
 
 class Simulation:
@@ -28,6 +29,10 @@ class Simulation:
             for drone in self.drones:
                 if not drone.path:
                     drone.path = self.pathfinder.get_path(drone.current_zone)
+
+                if not drone.path:
+                    print("Error: this map is impossible")
+                    sys.exit(1)
 
                 if drone.move(self.graph):
                     if (drone.target_zone is not None and
