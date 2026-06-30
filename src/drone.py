@@ -9,6 +9,7 @@ class Drone:
         self.current_connection: Connection | None = None
         self.target_zone: Zone | None = None
         self.transit_timer: int = 0
+        self.wait_time: int = 0
 
         if path is None:
             self.path: list[Zone] = []

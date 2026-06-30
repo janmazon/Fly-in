@@ -27,6 +27,10 @@ class Simulation:
             drones_to_remove: list[Drone] = []
 
             for drone in self.drones:
+                if drone.wait_time > 1:
+                    drone.path = []
+                    drone.wait_time = 0
+
                 if not drone.path:
                     drone.path = self.pathfinder.get_path(drone.current_zone)
 
@@ -35,6 +39,7 @@ class Simulation:
                     sys.exit(1)
 
                 if drone.move(self.graph):
+                    drone.wait_time = 0
                     if (drone.target_zone is not None and
                             drone.current_connection is not None):
                         moves.append(f"D{drone.drone_id}-"
@@ -43,6 +48,8 @@ class Simulation:
                     elif drone.current_zone is not None:
                         moves.append(f"D{drone.drone_id}-"
                                      f"{drone.current_zone.name}")
+                else:
+                    drone.wait_time += 1
 
                 if drone.current_zone is self.graph.end_hub:
                     drones_to_remove.append(drone)
