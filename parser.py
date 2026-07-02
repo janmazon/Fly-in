@@ -1,4 +1,4 @@
-from src.graph import Graph, Zone, ZoneType, Connection
+from graph import Graph, Zone, ZoneType, Connection
 
 
 class ParseError(Exception):

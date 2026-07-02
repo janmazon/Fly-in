@@ -1,4 +1,4 @@
-from src.graph import Zone, Connection, Graph, ZoneType
+from graph import Zone, Connection, Graph, ZoneType
 
 
 class Drone:

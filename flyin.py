@@ -1,8 +1,8 @@
 import sys
-from src.graph import Graph
-from src.parser import ParseError, MapParser
-from src.simulation import Simulation
-from src.visualizer import Visualizer
+from graph import Graph
+from parser import ParseError, MapParser
+from simulation import Simulation
+from visualizer import Visualizer
 
 
 def main() -> None:

@@ -1,54 +1,83 @@
-*This project has been created as part of the 42 curriculum by jcamarer.*
+*Este proyecto ha sido creado como parte del currículo de 42 por jcamarer.*
 
 # Fly-in
 
 ## Descripción
 
-**Fly-in** es una simulación de enrutamiento de drones escrita en Python. El objetivo del proyecto es trasladar una flota de drones desde una zona `start_hub` hasta una zona `end_hub`, a través de una red de zonas conectadas (un grafo), en el menor número posible de turnos de simulación, respetando un conjunto de reglas de movimiento y de capacidad.
+**Fly-in** es una simulación de enrutamiento de flotas de drones escrita en Python, desarrollada como proyecto del currículo 42. El objetivo central del programa es trasladar un conjunto de drones desde una zona de partida (`start_hub`) hasta una zona de llegada (`end_hub`), navegando a través de una red de zonas interconectadas representadas como un **grafo**, en el **mínimo número de turnos** posible.
 
-El mapa (el grafo de zonas y conexiones) se describe mediante un archivo de texto con un formato propio, que se parsea y se transforma en una representación interna totalmente orientada a objetos. Cada zona puede tener un tipo (`normal`, `restricted`, `priority`, `blocked`) que afecta al coste de atravesarla, así como un número máximo de drones que puede contener simultáneamente. Cada conexión entre dos zonas también puede limitar cuántos drones pueden circular por ella al mismo tiempo.
+El mapa (la red de zonas y conexiones) se describe mediante un archivo de texto con un formato propio. El programa lo parsea y lo transforma en una representación interna completamente orientada a objetos, sin utilizar ninguna librería externa de grafos (está prohibido el uso de `networkx`, `graphlib`, etc.).
 
-Una vez cargado el mapa, un buscador de caminos basado en el algoritmo A* calcula la mejor ruta para cada drone, teniendo en cuenta el coste de las zonas, sus capacidades y el estado en tiempo real de la simulación. A continuación, un motor de simulación por turnos mueve a cada drone paso a paso, gestionando las esperas, los conflictos de capacidad y los tránsitos de varios turnos a través de zonas restringidas, hasta que todos los drones llegan a la zona final. Una interfaz gráfica con Tkinter muestra el mapa y el movimiento de los drones en tiempo real.
+Cada zona de la red puede pertenecer a uno de cuatro tipos, que determinan el coste de movimiento de los drones al atravesarla:
 
-### Características principales
+| Tipo | Coste | Descripción |
+|---|---|---|
+| `normal` | 1 turno | Zona estándar, sin restricciones especiales. |
+| `priority` | 1 turno | Zona preferente; el pathfinder la prioriza frente a otras del mismo coste. |
+| `restricted` | 2 turnos | Zona peligrosa; el drone tarda 2 turnos en llegar y no puede detenerse a mitad del tránsito. |
+| `blocked` | Inaccesible | Ningún drone puede entrar ni atravesarla. Cualquier ruta que la use es inválida. |
 
-- Parser de mapas personalizado, con mensajes de error detallados y precisos (indicando la línea exacta del fallo).
-- Diseño totalmente orientado a objetos (`Graph`, `Zone`, `Connection`, `Drone`, `Pathfinder`, `Simulation`, `Visualizer`).
-- Pathfinding mediante A*, que tiene en cuenta los costes de movimiento según el tipo de zona (`normal`, `restricted`, `priority`) y evita por completo las zonas `blocked`.
-- Motor de simulación turno a turno que aplica las reglas de ocupación de zonas y de capacidad de las conexiones.
-- Representación visual gráfica del mapa y del movimiento de los drones mediante Tkinter.
-- Tipado estricto y obligatorio (type hints en todo el proyecto), validado con `mypy`.
-- Estilo de código validado con `flake8`.
-- No se utiliza ninguna librería externa de grafos (ni `networkx`, ni `graphlib`, etc.) — toda la lógica de grafos está implementada desde cero.
+Además, tanto las zonas como las conexiones entre ellas tienen **capacidades**: una zona puede estar limitada a contener un solo drone a la vez (por defecto), o hasta N drones si se configura con `max_drones=N`; una conexión puede limitarse a un solo drone en tránsito simultáneo (por defecto) o más con `max_link_capacity=N`. El `start_hub` y el `end_hub` son excepciones: pueden contener cualquier número de drones.
+
+Teniendo esto en cuenta, el programa:
+1. **Parsea** el archivo de mapa y construye el grafo en memoria, validando el formato con mensajes de error detallados (línea exacta y causa del error).
+2. **Calcula rutas** para cada drone usando el algoritmo de búsqueda A*, que tiene en cuenta los costes de las zonas, la heurística y el tráfico en tiempo real de las conexiones.
+3. **Simula** el movimiento turno a turno, gestionando esperas, conflictos de capacidad y tránsitos de doble turno por zonas restringidas, hasta que todos los drones llegan al destino.
+4. **Visualiza** el proceso en tiempo real mediante una interfaz gráfica con Tkinter.
+
+---
 
 ## Instrucciones
 
-### Requisitos
+### Requisitos previos
 
 - Python 3.10 o superior.
-- `flake8` y `mypy` para el linting (ver `requirements.txt`).
+- `flake8` y `mypy` (herramientas de linting, incluidas en `requirements.txt`).
+- Tkinter (incluido con Python en la mayoría de sistemas. En Linux puede requerirse instalar `python3-tk`).
+
+```bash
+sudo apt install python3-tk
+```
 
 ### Instalación
+
+Clona el repositorio y ejecuta:
 
 ```bash
 make install
 ```
 
-Este comando instala las dependencias de desarrollo del proyecto (`flake8`, `mypy`) listadas en `requirements.txt`.
+Este comando instala las dependencias de desarrollo del proyecto (`flake8`, `mypy`) listadas en `requirements.txt` usando `pip`.
 
-### Ejecutar la simulación
+También puede hacer directamente:
+
+```bash
+pip install -r requirements.txt
+```
+
+### Ejecución de la simulación
 
 ```bash
 make run
 ```
 
-o directamente:
+o directamente desde la raíz del proyecto:
 
 ```bash
-python3 flyin.py <map.txt>
+python3 flyin.py <ruta_al_mapa.txt>
 ```
 
-Donde `<map.txt>` es la ruta a un archivo de mapa que siga el formato descrito más abajo (puedes ver `simple_map.txt` como ejemplo). El programa imprime, turno a turno, los movimientos realizados por cada drone; al finalizar, imprime el número total de turnos y abre una ventana gráfica que muestra la simulación.
+**Ejemplo con el mapa incluido:**
+
+```bash
+python3 flyin.py simple_map.txt
+```
+
+El programa:
+1. Parsea el mapa indicado.
+2. Imprime en consola, turno a turno, los movimientos de cada drone.
+3. Imprime el número total de turnos al finalizar.
+4. Abre una ventana gráfica con Tkinter mostrando el estado final de la simulación.
 
 ### Depuración
 
@@ -56,21 +85,21 @@ Donde `<map.txt>` es la ruta a un archivo de mapa que siga el formato descrito m
 make debug
 ```
 
-Ejecuta el script principal usando el depurador integrado de Python (`pdb`).
+Ejecuta el script principal bajo el depurador integrado de Python (`pdb`), permitiendo inspeccionar el estado del programa paso a paso.
 
-### Linting
+### Linting y verificación de tipos
 
 ```bash
 make lint
 ```
 
-Ejecuta `flake8 .` y `mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs`.
+Ejecuta `flake8 .` y `mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs`
 
 ```bash
 make lint-strict
 ```
 
-Ejecuta `flake8 .` y `mypy . --strict` para una verificación más estricta (opcional).
+Ejecuta `flake8 .` y `mypy . --strict` para una verificación aún más estricta (opcional pero recomendada).
 
 ### Limpieza
 
@@ -78,19 +107,37 @@ Ejecuta `flake8 .` y `mypy . --strict` para una verificación más estricta (opc
 make clean
 ```
 
-Elimina los archivos temporales y las cachés (`__pycache__`, `.mypy_cache`, etc.).
+Elimina los archivos temporales y las cachés generadas por Python y mypy (`__pycache__`, `.mypy_cache`, `*.pyc`, etc.).
+
+### Estructura del proyecto
+
+```
+.
+├── flyin.py              # Punto de entrada del programa
+├── Makefile              # Automatización de tareas
+├── requirements.txt      # Dependencias de desarrollo
+├── simple_map.txt        # Mapa de ejemplo (nivel fácil)
+├── README.md             # Este archivo
+├── graph.py              # Clases Zone, Connection y Graph
+├── parser.py             # Parser del archivo de mapa (MapParser, ParseError)
+├── pathfinder.py         # Algoritmo A* (Pathfinder)
+├── drone.py              # Lógica de movimiento de cada drone (Drone)
+├── simulation.py         # Motor de simulación turno a turno (Simulation)
+└── visualizer.py         # Interfaz gráfica Tkinter (Visualizer)
+```
 
 ### Formato del archivo de mapa
 
 ```
+# Los comentarios comienzan con '#' y son ignorados
 nb_drones: 5
 
 start_hub: hub 0 0 [color=green]
-end_hub: goal 10 10 [color=yellow]
-hub: roof1 3 4 [zone=restricted color=red]
-hub: roof2 6 2 [zone=normal color=blue]
+end_hub:   goal 10 10 [color=yellow]
+hub: roof1     3 4 [zone=restricted color=red]
+hub: roof2     6 2 [zone=normal color=blue]
 hub: corridorA 4 3 [zone=priority color=green max_drones=2]
-hub: tunnelB 7 4 [zone=normal color=red]
+hub: tunnelB   7 4 [zone=normal color=red]
 hub: obstacleX 5 5 [zone=blocked color=gray]
 
 connection: hub-roof1
@@ -101,56 +148,159 @@ connection: corridorA-tunnelB [max_link_capacity=2]
 connection: tunnelB-goal
 ```
 
-- La primera línea (sin contar comentarios) debe definir el número de drones con `nb_drones: <entero_positivo>`.
-- Las zonas se declaran con `start_hub:`, `end_hub:` o `hub:`, seguido de un nombre único, las coordenadas enteras `x` e `y`, y metadatos opcionales entre corchetes (`zone`, `color`, `max_drones`).
-- Las conexiones se declaran con `connection: <zona1>-<zona2>` y un metadato opcional `max_link_capacity`.
-- Las líneas que empiezan por `#` son comentarios y se ignoran.
+Reglas del formato:
+- La primera línea (sin contar comentarios) debe ser `nb_drones: <entero_positivo>`.
+- Las zonas se declaran con `start_hub:`, `end_hub:` o `hub:`, seguido del nombre (sin guiones ni espacios), las coordenadas enteras `x` e `y`, y metadatos opcionales entre corchetes.
+- Las conexiones se declaran con `connection: <zona1>-<zona2>` y opcionalmente `[max_link_capacity=N]`.
+- Debe haber exactamente un `start_hub` y un `end_hub`.
+- Los nombres de zona son únicos y no pueden contener guiones (ya que el guion separa zonas en las conexiones).
 
-### Tipos de zona
+---
 
-| Tipo | Coste de movimiento | Descripción |
+## Ejemplo de entrada y salida esperada
+
+### Archivo de entrada: `simple_map.txt`
+
+```
+# Easy Level 1: Simple linear path
+nb_drones: 2
+
+start_hub: start 0 0 [color=green]
+hub: waypoint1 1 0 [color=blue]
+hub: waypoint2 2 0 [color=blue]
+end_hub: goal 3 0 [color=red]
+
+connection: start-waypoint1
+connection: waypoint1-waypoint2
+connection: waypoint2-goal
+```
+
+Este mapa define una red lineal sencilla: `start → waypoint1 → waypoint2 → goal`, con 2 drones y una capacidad por defecto de 1 drone por zona y por conexión.
+
+### Ejecución
+
+```bash
+python3 flyin.py simple_map.txt
+```
+
+### Salida esperada en consola
+
+```
+D1-waypoint1
+D2-waypoint1 D1-waypoint2
+D2-waypoint2 D1-goal
+D2-goal
+4
+```
+
+### Interpretación de la salida
+
+| Turno | Salida | Explicación |
 |---|---|---|
-| `normal` | 1 turno (por defecto) | Zona estándar, sin restricciones. |
-| `restricted` | 2 turnos | Zona sensible o peligrosa; el drone tarda 2 turnos en atravesarla y, una vez ha empezado el tránsito, debe llegar obligatoriamente en el turno siguiente (no puede esperar a mitad de camino). |
-| `priority` | 1 turno | Zona preferente; cuesta lo mismo que una zona normal, pero el pathfinder la prioriza. |
-| `blocked` | — | Zona inaccesible; ningún camino puede pasar por ella. |
+| 1 | `D1-waypoint1` | D1 avanza a `waypoint1`. D2 no puede moverse porque `waypoint1` ya está ocupado (capacidad 1). |
+| 2 | `D2-waypoint1 D1-waypoint2` | D1 sale de `waypoint1` liberando espacio; D2 entra. Ambos se mueven en el mismo turno. |
+| 3 | `D2-waypoint2 D1-goal` | D1 llega al destino y queda entregado. D2 avanza. |
+| 4 | `D2-goal` | D2 llega al destino. Simulación completada. |
+| — | `4` | Número total de turnos. |
 
-## Descripción del algoritmo y estrategia de implementación
+El formato de cada línea es `D<ID>-<nombre_zona>`. Los drones que no se mueven en un turno se omiten. Los drones que alcanzan `goal` dejan de aparecer en los turnos siguientes.
 
-- **Representación del grafo (`graph.py`)**: `Zone`, `Connection` y `Graph` son clases de datos simples y autocontenidas, construidas sin ninguna librería externa de grafos, cumpliendo así con la restricción del enunciado de no usar librerías como `networkx` o `graphlib`.
+### Ejemplo con zona restringida
 
-- **Parseo (`parser.py`)**: la clase `MapParser` lee el archivo de mapa línea a línea, validando estrictamente el formato y lanzando un `ParseError` con el número de línea y un mensaje claro ante cualquier entrada incorrecta (zonas duplicadas, metadatos inválidos, hubs ausentes o duplicados, conexiones que referencian zonas inexistentes, conexiones duplicadas, etc.).
+Si `waypoint1` fuera de tipo `restricted`, el drone tardaría 2 turnos en cruzarla. Durante el primer turno, la salida mostraría el nombre de la **conexión** (no la zona destino), indicando que el drone está en tránsito:
 
-- **Pathfinding (`pathfinder.py`)**: la clase `Pathfinder` implementa el algoritmo de búsqueda A*. El coste de entrar en una zona depende de su tipo (`restricted` cuesta más, `priority` cuesta menos, `blocked` nunca se explora), y la heurística utilizada es la distancia de Manhattan hasta el hub final. El algoritmo también tiene en cuenta el tráfico actual de cada conexión, de modo que las rutas evitan de forma natural los enlaces congestionados.
+```
+D1-start-waypoint1
+D1-waypoint1
+...
+```
 
-- **Comportamiento de los drones (`drone.py`)**: cada `Drone` mantiene su zona actual, su camino planificado, y el estado de cualquier tránsito en curso de varios turnos a través de una zona restringida. En cada turno, un drone intenta avanzar por su camino respetando la capacidad de zonas y conexiones; si no puede moverse, espera.
+---
 
-- **Motor de simulación (`simulation.py`)**: la clase `Simulation` dirige todo el proceso turno a turno. Los drones sin camino asignado solicitan uno al `Pathfinder`. Si un drone permanece bloqueado durante demasiado tiempo, su camino se descarta para que pueda recalcularse, lo cual ayuda a resolver congestiones locales y evitar bloqueos (deadlocks). Todos los movimientos realizados en un turno se imprimen en el formato requerido `D<ID>-<zona>` / `D<ID>-<conexión>`.
+## Algoritmo y decisiones de diseño
 
-- **Complejidad y rendimiento**: en cada turno, el pathfinder se ejecuta (en el peor caso) con una complejidad de `O(E log V)` aproximada gracias a A* (donde `E` es el número de conexiones y `V` el de zonas), y solo se recalcula el camino de un drone cuando no tiene uno asignado o cuando ha quedado bloqueado, evitando recálculos innecesarios en cada turno. El uso de memoria es proporcional al número de zonas, conexiones y drones activos, sin estructuras adicionales costosas.
+### Visión general
 
-- **Visualización (`visualizer.py`)**: la clase `Visualizer` utiliza Tkinter para dibujar las zonas (como círculos de colores, usando el color declarado de cada zona), las conexiones (como líneas) y los drones (como pequeños marcadores numerados), refrescando el canvas después de cada turno de simulación. Esto permite observar en tiempo real cómo se distribuyen los drones por la red, cómo se forman (o evitan) las congestiones, y cómo el algoritmo de pathfinding va adaptando las rutas, lo que facilita mucho la comprensión del comportamiento del sistema durante la evaluación entre pares.
+La base del proyecto es el algoritmo **A\*** (*A-star*), implementado en `pathfinder.py`. A* es un algoritmo de búsqueda que encuentra el camino de menor coste entre dos nodos de un grafo, combinando el coste real acumulado desde el origen (`g`) con una estimación heurística del coste restante hasta el destino (`h`). La suma `f = g + h` determina en qué orden se exploran los nodos.
+
+A* garantiza encontrar el camino óptimo siempre que la heurística sea **admisible** (no sobreestime el coste real). En este proyecto se utiliza la **distancia de Manhattan** entre la zona actual y el `end_hub`, lo que es admisible porque el grafo puede tener conexiones en cualquier dirección y el coste mínimo de cualquier movimiento es 1 turno.
+
+### Función de coste
+
+El coste de entrar en una zona vecina se calcula como:
+
+```
+coste_al_vecino = coste_real_actual + coste_base + tráfico_actual_de_la_conexión
+```
+
+Donde `coste_base` depende del tipo de zona destino:
+- `normal` → 1.0
+- `priority` → 0.5 (favorece que el pathfinder elija estas zonas)
+- `restricted` → 2.0
+- `blocked` → nunca se explora (se descarta directamente)
+
+Añadir el tráfico actual de la conexión (`connection.current_traffic`) hace que el pathfinder tienda a evitar rutas congestionadas, distribuyendo mejor la flota.
+
+### Recálculo dinámico de rutas
+
+Los drones no recalculan su ruta en cada turno (lo que sería costoso e innecesario). El `Pathfinder` solo se invoca cuando un drone no tiene camino asignado o cuando ha permanecido bloqueado durante más de un turno seguido. En ese caso, la ruta se descarta y se recalcula teniendo en cuenta el estado actual del grafo (tráfico y ocupación). Este mecanismo permite al sistema adaptarse a congestiones locales y resolver situaciones de bloqueo mutuo (*deadlock*) sin necesidad de lógica adicional.
+
+### Mecánica de zonas restringidas
+
+Cuando el próximo paso de un drone es una zona `restricted`, el movimiento ocupa **2 turnos**:
+
+- **Turno 1**: el drone sale de su zona actual, entra en la conexión y queda "en tránsito" (`transit_timer = 1`). La zona destino queda reservada. La salida imprime el nombre de la conexión (`D1-zonaA-zonaB`).
+- **Turno 2**: el drone llega obligatoriamente a la zona restringida, sin posibilidad de detenerse a mitad del tránsito. La zona origen ya no lo cuenta, pero la zona destino debe tener capacidad libre en ese segundo turno.
+
+### Gestión de capacidades
+
+Antes de que un drone intente moverse, se verifican dos condiciones:
+1. `connection.current_traffic < connection.max_link_capacity` → la conexión tiene espacio.
+2. `next_zone.current_drones < next_zone.max_drones` → la zona destino tiene espacio (excepto si es el `end_hub`).
+
+Los drones que salen de una zona **liberan su espacio en el mismo turno** en que se mueven, lo que permite que otro drone entre en esa misma zona en el mismo turno (siempre que el movimiento sea válido). Esto es esencial para que múltiples drones puedan avanzar simultáneamente en redes con capacidad 1 por zona.
+
+---
+
+## Representación visual
+
+La clase `Visualizer` (en `visualizer.py`) utiliza **Tkinter** para dibujar el estado del mapa y de los drones en una ventana gráfica, que se actualiza en tiempo real después de cada turno de simulación.
+
+### Qué se muestra
+
+- **Conexiones**: dibujadas como líneas grises que unen las zonas. Permiten visualizar la red de un vistazo.
+- **Zonas**: dibujadas como círculos de colores. El color de cada zona es el declarado en el archivo de mapa (por ejemplo, `color=green` para el `start_hub`, `color=red` para las zonas restringidas, etc.). Si una zona no tiene color asignado, se dibuja en gris claro. Debajo de cada círculo aparece el nombre de la zona (en mapas con menos de 45 zonas).
+- **Drones**: dibujados como pequeños círculos negros con el número de ID del drone en blanco en su interior. Se sitúan sobre la zona en la que se encuentran en ese turno. Si varios drones están en la misma zona, se colocan uno al lado del otro formando una fila, evitando que se solapen.
+
+### Escalado automático
+
+El `Visualizer` calcula automáticamente la escala y el centrado del mapa para que ocupe toda la ventana disponible (que se abre en modo maximizado), independientemente del tamaño o la dispersión de las coordenadas del mapa. Esto hace que la visualización sea igualmente legible tanto para mapas pequeños de 4 nodos como para mapas grandes con decenas de zonas.
+
+### Cómo mejora la comprensión
+
+La representación gráfica aporta un valor significativo durante la simulación y la evaluación:
+
+- **Observación del flujo**: es visible cómo los drones se distribuyen por distintas rutas cuando existen varios caminos, y cómo se forman colas en zonas o conexiones con poca capacidad.
+- **Identificación de cuellos de botella**: las zonas donde se acumulan drones durante varios turnos seguidos son visualmente obvias, lo que facilita entender por qué el pathfinder elige ciertas rutas alternativas.
+- **Verificación intuitiva**: al poder seguir visualmente cada drone numerado de zona en zona, es fácil comprobar que el algoritmo respeta las reglas de capacidad y los tipos de zona, sin necesidad de leer línea a línea la salida de consola.
+- **Depuración**: durante el desarrollo, la ventana gráfica permitió detectar rápidamente situaciones anómalas (drones que no avanzaban, zonas que se saturaban incorrectamente, etc.) que habrían sido muy difíciles de encontrar solo con la salida de texto.
+
+---
 
 ## Recursos
 
 - [PEP 257 — Convenciones de docstrings](https://peps.python.org/pep-0257/)
 - [Documentación del módulo `typing` de Python](https://docs.python.org/3/library/typing.html)
-- [Documentación de mypy](https://mypy.readthedocs.io/)
-- [Documentación de flake8](https://flake8.pycqa.org/)
-- [Algoritmo de búsqueda A* — resumen](https://en.wikipedia.org/wiki/A*_search_algorithm)
+- [Algoritmo A* — Wikipedia](https://en.wikipedia.org/wiki/A*_search_algorithm)
+- [Heurísticas admisibles — Wikipedia](https://en.wikipedia.org/wiki/Admissible_heuristic)
+- [Distancia de Manhattan](https://en.wikipedia.org/wiki/Taxicab_geometry)
 - [Documentación de Tkinter](https://docs.python.org/3/library/tkinter.html)
 
-### Uso de IA
+### Uso de inteligencia artificial
 
-Durante este proyecto se utilizó IA (Claude) como herramienta de apoyo y revisión, no como sustituto de la comprensión del código:
+Durante el desarrollo de este proyecto se utilizó IA como herramienta de apoyo y revisión, no como sustituto de la comprensión del código:
 
-- Revisión y discusión de la estructura de la implementación de A* en `pathfinder.py` (función de coste, elección de la heurística), para asegurar que reflejaba correctamente las reglas de coste por tipo de zona del enunciado.
-- Ayuda para depurar casos límite en la lógica de movimiento por turnos en `drone.py` y `simulation.py`, en particular el manejo de los tránsitos de varios turnos a través de zonas `restricted`.
-- Revisión del manejo de errores del parser en `parser.py`, para asegurar que cualquier línea mal formada genera un mensaje de error claro y con la línea exacta.
+- Revisión de la función de coste y la elección de heurística en el algoritmo A* de `pathfinder.py`, para confirmar que reflejaba correctamente las reglas de coste por tipo de zona del enunciado.
+- Discusión de casos límite en la mecánica de movimiento por turnos en `drone.py` y `simulation.py`, en particular el comportamiento de los tránsitos de dos turnos a través de zonas `restricted`.
+- Revisión del manejo de errores en el parser (`parser.py`) para asegurar que cualquier línea mal formada genera un mensaje de error claro y con el número de línea exacto.
 - Apoyo en la redacción y el formato de este `README.md`.
-
-Todas las sugerencias generadas por la IA fueron revisadas, probadas y adaptadas antes de integrarse, siguiendo las directrices de uso de IA del proyecto.
-
----
-
-**Nota:** el enunciado del proyecto (Fly-in) exige que el `README.md` esté escrito en inglés. Esta versión se ha redactado en español a petición explícita del autor; si la evaluación lo requiere, puede ser necesario aportar también una versión en inglés.

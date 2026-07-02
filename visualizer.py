@@ -1,6 +1,6 @@
 import tkinter as tk
-from src.graph import Graph
-from src.drone import Drone
+from graph import Graph
+from drone import Drone
 
 
 class Visualizer:

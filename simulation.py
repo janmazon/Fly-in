@@ -1,7 +1,7 @@
-from src.graph import Graph
-from src.drone import Drone
-from src.pathfinder import Pathfinder
-from src.visualizer import Visualizer
+from graph import Graph
+from drone import Drone
+from pathfinder import Pathfinder
+from visualizer import Visualizer
 import time
 import sys
 
